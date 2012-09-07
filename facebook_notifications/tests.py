@@ -1,4 +1,6 @@
 from django.test import TestCase
+import facepy
+import ludibrio
 
 from facebook_notifications import notifications
 
@@ -39,6 +41,34 @@ class TestNotification(TestCase):
         return notifications.Notification(recipient, target, template)
 
     def assertInvalidNotification(self, **kwargs):
-        self.assertRaises(notifications.NotificationException,
+        self.assertRaises(notifications.NotificationError,
                           self._create_notification,
                           **kwargs)
+
+
+class TestNotificationSender(TestCase):
+    def test_sending_notification(self):
+        with ludibrio.Mock() as graph:
+            graph.post('123/notifications',
+                       href='http://localhost:8080/',
+                       template='test test test')
+        sender = notifications.NotificationSender(graph)
+        notification = notifications.Notification('123',
+                                                  'http://localhost:8080/',
+                                                  'test test test')
+        sender.send(notification)
+        graph.validate()
+
+    def test_throwing_exceptions(self):
+        graph = self._get_graph_stub_raising_facepy_error()
+        sender = notifications.NotificationSender(graph)
+        self.assertRaises(notifications.SenderError,
+                          sender.send,
+                          ludibrio.Dummy())
+
+    def _get_graph_stub_raising_facepy_error(self):
+        def raise_exception(*args, **kwargs):
+            raise facepy.FacepyError("test")
+        with ludibrio.Stub() as graph:
+            graph.post >> raise_exception
+        return graph

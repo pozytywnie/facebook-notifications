@@ -1,12 +1,20 @@
 import urlparse
 
+import facepy
 
-class FacebookNotificationsException(Exception):
+
+class FacebookNotificationsError(Exception):
     pass
 
 
-class NotificationException(FacebookNotificationsException):
+class NotificationError(FacebookNotificationsError):
     pass
+
+
+class SenderError(FacebookNotificationsError):
+    def __init__(self, origin_exception):
+        self.origin_exception = origin_exception
+        return super(SenderError, self).__init__(origin_exception.message)
 
 
 class Notification(object):
@@ -25,12 +33,12 @@ class Notification(object):
 
     def _validate_if_recipient_is_not_empty(self):
         if not self.recipient:
-            raise NotificationException("Recipient could not be empty.")
+            raise NotificationError("Recipient could not be empty.")
 
     def _validate_if_target_is_absolute_url(self):
         parsed_target = urlparse.urlparse(self.target)
         if parsed_target.scheme not in ['http', 'https']:
-            raise NotificationException(
+            raise NotificationError(
                 "target is not valid url with domain and scheme."
             )
 
@@ -40,13 +48,29 @@ class Notification(object):
 
     def _validate_if_template_is_not_empty(self):
         if not self.template:
-            raise NotificationException("template should not be empty.")
+            raise NotificationError("template should not be empty.")
 
     def _validate_if_template_is_not_to_long(self):
         # MAX_LENGHT is defined in Facebook docs:
         # https://developers.facebook.com/docs/app_notifications/
         MAX_LENGTH = 180
         if len(self.template) > MAX_LENGTH:
-            raise NotificationException(
+            raise NotificationError(
                 "template is longer than %d characters" % MAX_LENGTH
             )
+
+
+class NotificationSender(object):
+    def __init__(self, graph_object_with_app_token):
+        self.graph = graph_object_with_app_token
+
+    def send(self, notification):
+        try:
+            self._try_to_send(notification)
+        except facepy.FacepyError as e:
+            raise SenderError(e)
+
+    def _try_to_send(self, notification):
+        return self.graph.post(notification.recipient + '/notifications',
+                               href=notification.target,
+                               template=notification.template)
