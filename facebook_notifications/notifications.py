@@ -25,7 +25,7 @@ class Notification(object):
 
         self._clean_template()
         self._validate_if_recipient_is_not_empty()
-        self._validate_if_target_is_absolute_url()
+        self._validate_if_target_is_relative_path()
         self._validate_template()
 
     def _clean_template(self):
@@ -35,11 +35,11 @@ class Notification(object):
         if not self.recipient:
             raise NotificationError("Recipient could not be empty.")
 
-    def _validate_if_target_is_absolute_url(self):
+    def _validate_if_target_is_relative_path(self):
         parsed_target = urlparse.urlparse(self.target)
-        if parsed_target.scheme not in ['http', 'https']:
+        if parsed_target.scheme or self.target.startswith('/'):
             raise NotificationError(
-                "target is not valid url with domain and scheme."
+                "target is not valid relative path."
             )
 
     def _validate_template(self):

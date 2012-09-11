@@ -8,10 +8,10 @@ from facebook_notifications import notifications
 class TestNotification(TestCase):
     def test_creating_valid_notification(self):
         notification = self._create_notification(recipient="123",
-                                                 target="http://example.com/",
+                                                 target="foo/bar/",
                                                  template="Test notification")
         self.assertEqual(notification.recipient, "123")
-        self.assertEqual(notification.target, "http://example.com/")
+        self.assertEqual(notification.target, "foo/bar/")
         self.assertEqual(notification.template, "Test notification")
 
     def test_if_template_is_stripped(self):
@@ -23,10 +23,10 @@ class TestNotification(TestCase):
     def test_if_empty_recipient_is_invalid(self):
         self.assertInvalidNotification(recipient="")
 
-    def test_if_non_url_target_is_invalid(self):
-        self.assertInvalidNotification(target="invalid target")
+    def test_if_url_target_is_invalid(self):
+        self.assertInvalidNotification(target="http://www.google.pl")
 
-    def test_if_relative_url_target_is_invalid(self):
+    def test_if_absolute_path_target_is_invalid(self):
         self.assertInvalidNotification(target="/relative/target/")
 
     def test_if_empty_template_is_invalid(self):
@@ -36,7 +36,7 @@ class TestNotification(TestCase):
         self.assertInvalidNotification(template=500 * "a")
 
     def _create_notification(self, recipient="123",
-                             target="http://example.com/",
+                             target="foo/bar/",
                              template="Test notification."):
         return notifications.Notification(recipient, target, template)
 
@@ -50,11 +50,11 @@ class TestNotificationSender(TestCase):
     def test_sending_notification(self):
         with ludibrio.Mock() as graph:
             graph.post('123/notifications',
-                       href='http://localhost:8080/',
+                       href='foo/bar/',
                        template='test test test')
         sender = notifications.NotificationSender(graph)
         notification = notifications.Notification('123',
-                                                  'http://localhost:8080/',
+                                                  'foo/bar/',
                                                   'test test test')
         sender.send(notification)
         graph.validate()
