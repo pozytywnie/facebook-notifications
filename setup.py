@@ -8,7 +8,7 @@ def read(name):
 
 setup(
     name='facebook-notifications',
-    version='0',
+    version='0.1',
     description="Sends notifications using Facebook Notification API",
     long_description=read("README.rst"),
     maintainer="Tomasz Wysocki",
