@@ -68,7 +68,17 @@ class NotificationSender(object):
         try:
             self._try_to_send(notification)
         except facepy.FacepyError as e:
-            raise SenderError(e)
+            code = getattr(e, 'code', None)
+            low_priority_codes = self._low_priority_opengraph_errors().keys()
+            if code not in low_priority_codes:
+                raise SenderError(e)
+
+    def _low_priority_opengraph_errors(self):
+        return {
+            1: 'An unknown error occurred',
+            100: 'Invalid parameter / action not accepted',
+            190: 'Invalid OAuth 2.0 Access Token',
+            200: 'Permissions error'}
 
     def _try_to_send(self, notification):
         return self.graph.post(notification.recipient + '/notifications',
