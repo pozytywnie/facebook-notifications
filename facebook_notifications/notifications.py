@@ -1,4 +1,7 @@
-import urlparse
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 import facepy
 
@@ -36,7 +39,7 @@ class Notification(object):
             raise NotificationError("Recipient could not be empty.")
 
     def _validate_if_target_is_relative_path(self):
-        parsed_target = urlparse.urlparse(self.target)
+        parsed_target = urlparse(self.target)
         if parsed_target.scheme or self.target.startswith('/'):
             raise NotificationError(
                 "target is not valid relative path."
