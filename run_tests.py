@@ -1,7 +1,7 @@
 import sys
 
 from django.conf import settings
-from django.core.management import execute_manager
+from django.core.management import execute_from_command_line
 
 if not settings.configured:
     PROJECT_APPS = (
@@ -27,11 +27,10 @@ if not settings.configured:
         ROOT_URLCONF = 'facebook_auth.urls',
         JENKINS_TASKS = (
             'django_jenkins.tasks.with_coverage',
-            'django_jenkins.tasks.django_tests',
             'django_jenkins.tasks.run_pep8',
             'django_jenkins.tasks.run_pyflakes',
         )
     )
 
 sys.argv += ['jenkins']
-execute_manager(settings)
+execute_from_command_line(sys.argv)

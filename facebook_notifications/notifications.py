@@ -31,6 +31,12 @@ class Notification(object):
         self._validate_if_target_is_relative_path()
         self._validate_template()
 
+    def __repr__(self):
+        arguments = 'recipient=%s, target=%s, template=%s' % (self.recipient,
+                                                              self.target,
+                                                              self.template)
+        return "%s(%s)" % (type(self).__name__, arguments)
+
     def _clean_template(self):
         self.template = self.template.strip()
 
