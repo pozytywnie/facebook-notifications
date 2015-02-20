@@ -15,6 +15,8 @@ Installation
 Usage
 -----
 
+Here is an example::
+
     notification = notifications.Notification(recipient_id, target_url, message)
 
     token = facepy.get_application_access_token(settings.FACEBOOK_APP_ID,
